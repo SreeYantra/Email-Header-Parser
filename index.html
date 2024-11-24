@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Header Parser Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #headerParser {
+            padding: 20px;
+            text-align: center;
+        }
+
+        #headerInput {
+            width: 80%;
+            max-width: 800px;
+            padding: 10px;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #parsedHeaderResult {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border: 1px solid #ccc;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #f1f1f1;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Email Header Parser Tool</h1>
+        <p>Paste an email header below to parse and analyze.</p>
+    </header>
+
+    <section id="headerParser">
+        <textarea id="headerInput" rows="10" placeholder="Paste email header here..."></textarea>
+        <br>
+        <button id="parseButton">Parse Header</button>
+        <div id="parsedHeaderResult"></div>
+    </section>
+
+    <footer>
+        <p>Built with JavaScript for analyzing email headers.</p>
+    </footer>
+
+    <script>
+        document.getElementById('parseButton').addEventListener('click', function () {
+            const headerContent = document.getElementById('headerInput').value;
+            if (!headerContent.trim()) {
+                alert('Please paste an email header.');
+                return;
+            }
+
+            const parsedData = parseEmailHeader(headerContent);
+            displayParsedResult(parsedData);
+        });
+
+        // Function to parse the email header
+        function parseEmailHeader(headerContent) {
+            const headerLines = headerContent.split('\n');
+            const headerDetails = {
+                from: '',
+                to: '',
+                subject: '',
+                date: '',
+                received: [],
+                spf: '',
+                dkim: '',
+                dmarc: ''
+            };
+
+            headerLines.forEach(line => {
+                if (line.startsWith('From:')) {
+                    headerDetails.from = line.slice(5).trim();
+                } else if (line.startsWith('To:')) {
+                    headerDetails.to = line.slice(3).trim();
+                } else if (line.startsWith('Subject:')) {
+                    headerDetails.subject = line.slice(8).trim();
+                } else if (line.startsWith('Date:')) {
+                    headerDetails.date = line.slice(5).trim();
+                } else if (line.startsWith('Received:')) {
+                    headerDetails.received.push(line.slice(9).trim());
+                } else if (line.includes('spf=pass') || line.includes('spf=fail')) {
+                    headerDetails.spf = line.includes('spf=pass') ? 'Pass' : 'Fail';
+                } else if (line.includes('dkim=pass') || line.includes('dkim=fail')) {
+                    headerDetails.dkim = line.includes('dkim=pass') ? 'Pass' : 'Fail';
+                } else if (line.includes('dmarc=pass') || line.includes('dmarc=fail')) {
+                    headerDetails.dmarc = line.includes('dmarc=pass') ? 'Pass' : 'Fail';
+                }
+            });
+
+            return headerDetails;
+        }
+
+        // Function to display parsed email header
+        function displayParsedResult(parsedData) {
+            const resultDiv = document.getElementById('parsedHeaderResult');
+            resultDiv.innerHTML = `
+                <h3>Parsed Header:</h3>
+                <p><strong>From:</strong> ${parsedData.from}</p>
+                <p><strong>To:</strong> ${parsedData.to}</p>
+                <p><strong>Subject:</strong> ${parsedData.subject}</p>
+                <p><strong>Date:</strong> ${parsedData.date}</p>
+                <p><strong>Received:</strong> ${parsedData.received.join('<br>')}</p>
+                <p><strong>SPF Status:</strong> ${parsedData.spf}</p>
+                <p><strong>DKIM Status:</strong> ${parsedData.dkim}</p>
+                <p><strong>DMARC Status:</strong> ${parsedData.dmarc}</p>
+            `;
+        }
+    </script>
+</body>
+
+</html>
